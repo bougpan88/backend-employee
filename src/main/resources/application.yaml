@@ -1,0 +1,18 @@
+# Datasource
+spring:
+ datasource:
+  url: jdbc:postgresql://192.168.99.100:5432/employer
+  username: docker
+  password: pass
+ jpa:
+  hibernate:
+   ddl-auto: update
+
+server:
+ port: 9090
+
+spring.jackson.deserialization.fail-on-unknown-properties: true
+
+security.ignored: /**
+security.basic.enabled: false
+management.security.enabled: false
