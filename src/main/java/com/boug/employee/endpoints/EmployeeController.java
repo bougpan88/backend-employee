@@ -21,6 +21,7 @@ import java.util.function.Function;
 
 import static java.util.stream.Collectors.toSet;
 
+@CrossOrigin("http://localhost:4200")
 @RestController()
 @RequestMapping("employees")
 public class EmployeeController {

@@ -15,6 +15,7 @@ import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
 
+@CrossOrigin("http://localhost:4200")
 @RestController()
 @RequestMapping("attributes")
 public class AttributeController {
