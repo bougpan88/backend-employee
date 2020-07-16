@@ -1,10 +1,7 @@
 package com.boug.employee.endpoints;
 
 import com.boug.employee.converter.EmployeeConverter;
-import com.boug.employee.domain.Attribute;
 import com.boug.employee.domain.Employee;
-import com.boug.employee.domain.EmployeeAttribute;
-import com.boug.employee.dto.AttributeDto;
 import com.boug.employee.dto.EmployeeAttributeDto;
 import com.boug.employee.dto.EmployeeDto;
 import com.boug.employee.error.CustomError;
@@ -12,7 +9,6 @@ import com.boug.employee.service.EmployeeService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -20,8 +16,9 @@ import java.util.*;
 import java.util.function.Function;
 
 import static java.util.stream.Collectors.toSet;
+import static org.springframework.web.bind.annotation.RequestMethod.*;
 
-@CrossOrigin("http://localhost:4200")
+@CrossOrigin(value = "http://localhost:4200",methods = {GET,POST,PUT,DELETE})
 @RestController()
 @RequestMapping("employees")
 public class EmployeeController {

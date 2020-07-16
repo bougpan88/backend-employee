@@ -15,7 +15,9 @@ import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
 
-@CrossOrigin("http://localhost:4200")
+import static org.springframework.web.bind.annotation.RequestMethod.*;
+
+@CrossOrigin(value = "http://localhost:4200",methods = {GET,POST,PUT,DELETE})
 @RestController()
 @RequestMapping("attributes")
 public class AttributeController {

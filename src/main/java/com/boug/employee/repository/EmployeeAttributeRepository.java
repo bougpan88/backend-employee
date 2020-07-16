@@ -9,4 +9,6 @@ import java.util.List;
 public interface EmployeeAttributeRepository extends JpaRepository<EmployeeAttribute, EmployeeAttributeId> {
 
     List<EmployeeAttribute> findByEmployeeAttributeIdAttributeId(String attributeName);
+
+    void deleteByEmployeeAttributeIdEmployeeId(Long employeeId);
 }

@@ -111,9 +111,11 @@ public class EmployeeService {
         return employeeRepository.findAll();
     }
 
+    @Transactional
     public void deleteEmployee(Long employeeId){
         Optional<Employee> employee = employeeRepository.findById(employeeId);
         if (employee.isPresent()){
+            employeeAttributeRepository.deleteByEmployeeAttributeIdEmployeeId(employeeId);
             employeeRepository.deleteById(employeeId);
         } else {
             throw new ApplicationException(new CustomError(404, "Not Found", "Employee does not exist."));
