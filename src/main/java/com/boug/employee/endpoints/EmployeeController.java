@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 import java.util.*;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toSet;
 import static org.springframework.web.bind.annotation.RequestMethod.*;
@@ -94,6 +95,17 @@ public class EmployeeController {
             List<EmployeeDto> employeeDtos = new ArrayList<>();
             employees.forEach(employee -> employeeDtos.add(employeeConverter.employeeToEmployeeDto(employee)));
             return ResponseEntity.ok(employeeDtos);
+        }
+    }
+
+    @GetMapping(path = "/ids")
+    public ResponseEntity getAllEmployeeIds(){
+        List<Employee> employees = employeeService.getAllEmployees();
+        if (employees.isEmpty()){
+            return ResponseEntity.noContent().build();
+        } else{
+            List<Long> ids = employees.stream().map(Employee::getId).sorted().collect(Collectors.toList());
+            return ResponseEntity.ok(ids);
         }
     }
 

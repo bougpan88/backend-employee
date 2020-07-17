@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.springframework.web.bind.annotation.RequestMethod.*;
 
@@ -54,6 +55,13 @@ public class AttributeController {
         } else{
             return ResponseEntity.ok(attributeDtos);
         }
+    }
+
+    @GetMapping(path = "/names")
+    public ResponseEntity getAllAttributeNames(){
+        List<AttributeDto> attributeDtos = attributeService.getAllAttributes();
+        List<String> attributeNames = attributeDtos.stream().map(AttributeDto::getName).collect(Collectors.toList());
+        return ResponseEntity.ok(attributeNames);
     }
 
     @GetMapping(path = "/{attributeName}")
