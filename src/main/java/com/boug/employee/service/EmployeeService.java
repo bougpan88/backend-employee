@@ -85,6 +85,7 @@ public class EmployeeService {
                                                  employeeDto.getAddress(), employeeDto.getHasCar(),
                                                  employeeDto.getBirthDate(), employeeWithValidationError.employeeAttributes,
                                                  employeeWithValidationError.supervisorEmployee);
+                employeeAttributeRepository.deleteByEmployeeAttributeIdEmployeeId(employeeDto.getId());
                 for (EmployeeAttribute employeeAttribute: employeeWithValidationError.employeeAttributes){
                     employeeAttributeRepository.save(employeeAttribute);
                 }
