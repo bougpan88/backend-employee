@@ -71,9 +71,26 @@
 	<build>
 		<plugins>
 			<plugin>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-maven-plugin</artifactId>
-			</plugin>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-maven-plugin</artifactId>
+			<!-- Configuration excecutable=true i have added this to make the jar excecutable-->
+			<configuration>
+				<executable>true</executable>
+			</configuration>
+			<executions>
+				<execution>
+					<phase>install</phase>
+					<goals>
+						<goal>repackage</goal>
+					</goals>
+					<configuration>
+						<!-- Configuration classifier=exec i have added this to force maven create one Fat
+                        excecutable jar but also another jar for the dependencies of the payload modules-->
+						<!--  <classifier>exec</classifier>-->
+					</configuration>
+				</execution>
+			</executions>
+		</plugin>
 		</plugins>
 	</build>
 
