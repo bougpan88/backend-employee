@@ -86,6 +86,17 @@ public class EmployeeController {
         return ResponseEntity.ok(employeeConverter.employeeToEmployeeDto(retrievedEmployee));
     }
 
+    @GetMapping(path = "/search")
+    public ResponseEntity getEmployeeByAttributeSearch(@RequestParam String attributeName,
+                                                       @RequestParam String attributeValue) {
+        List<Employee> employees = employeeService.getEmployeesFromAttribute(attributeName, attributeValue);
+
+        List<EmployeeDto> employeeDtos = new ArrayList<>();
+        employees.forEach(employee -> employeeDtos.add(employeeConverter.employeeToEmployeeDto(employee)));
+        return ResponseEntity.ok(employeeDtos);
+    }
+
+
     @GetMapping
     public ResponseEntity getAllEmployees(){
         List<Employee> employees = employeeService.getAllEmployees();

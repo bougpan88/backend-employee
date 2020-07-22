@@ -15,10 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 @Service
 public class EmployeeService {
@@ -114,6 +111,7 @@ public class EmployeeService {
 
     @Transactional
     public void deleteEmployee(Long employeeId){
+
         Optional<Employee> employee = employeeRepository.findById(employeeId);
         if (employee.isPresent()){
             employeeAttributeRepository.deleteByEmployeeAttributeIdEmployeeId(employeeId);
@@ -154,6 +152,22 @@ public class EmployeeService {
             }
         }
         return employeeWithValidationError;
+    }
+
+    @Transactional
+    public List<Employee> getEmployeesFromAttribute(String attributeName, String attributeValue){
+        List<Employee> employees = new ArrayList<>();
+        Optional<Attribute> optAttribute = attributeRepository.findByName(attributeName);
+        if (optAttribute.isPresent()) {
+            List<EmployeeAttribute> employeeAttributes = employeeAttributeRepository.findByEmployeeAttributeIdAttributeIdAndAttributeValue(optAttribute.get().getId(), attributeValue);
+            employeeAttributes.forEach(employeeAttribute -> {
+                Optional<Employee> employee = employeeRepository.findById(employeeAttribute.getEmployeeAttributeId().getEmployeeId());
+                if (employee.isPresent()) {
+                    employees.add(employee.get());
+                }
+            });
+        }
+        return employees;
     }
 
 

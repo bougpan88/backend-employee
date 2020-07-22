@@ -77,9 +77,20 @@ public class AttributeController {
     }
 
     @PutMapping(path = "{oldAttributeName}")
-    public ResponseEntity updateAttribute(@PathVariable String oldAttributeName, @RequestParam String newAttributeName){
-        Attribute updated = attributeService.updateAttribute(oldAttributeName, newAttributeName);
-        return ResponseEntity.ok(updated);
+    public ResponseEntity updateAttribute(@PathVariable String oldAttributeName, @RequestBody AttributeDto attributeDto,
+                                          BindingResult bindingResult){
+        if (bindingResult.hasErrors()) {
+            List<FieldError> errors = bindingResult.getFieldErrors();
+            List<String> message = new ArrayList<>();
+            for (FieldError e : errors) {
+                message.add("@" + e.getField() + ":" + e.getDefaultMessage());
+            }
+            CustomError customError = new CustomError(400, "Bad Request", message.toString());
+            return ResponseEntity.badRequest().body(customError);
+        } else {
+            Attribute updated = attributeService.updateAttribute(oldAttributeName, attributeDto.getName());
+            return ResponseEntity.ok(updated);
+        }
     }
 
 

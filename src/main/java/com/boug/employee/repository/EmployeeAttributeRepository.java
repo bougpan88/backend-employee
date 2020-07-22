@@ -8,7 +8,7 @@ import java.util.List;
 
 public interface EmployeeAttributeRepository extends JpaRepository<EmployeeAttribute, EmployeeAttributeId> {
 
-    List<EmployeeAttribute> findByEmployeeAttributeIdAttributeId(String attributeName);
+    List<EmployeeAttribute> findByEmployeeAttributeIdAttributeIdAndAttributeValue(Long attributeId, String attributeValue);
 
     void deleteByEmployeeAttributeIdEmployeeId(Long employeeId);
 }
