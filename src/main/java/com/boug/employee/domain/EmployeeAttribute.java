@@ -9,7 +9,7 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.util.Objects;
 
-@Entity()
+@Entity
 @Table(name = "EmployeeAttribute")
 @Getter
 @Setter

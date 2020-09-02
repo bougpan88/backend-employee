@@ -9,10 +9,13 @@ spring:
    ddl-auto: update
 
 server:
- port: 9090
+ port: 9595
 
 spring.jackson.deserialization.fail-on-unknown-properties: true
 
-security.ignored: /**
-security.basic.enabled: false
-management.security.enabled: false
+jwt.secret: fsdfsdfsdf
+
+security.ignored: /authenticate
+
+#Log http requests and responses
+logging.level.org.springframework.ws.server.MessageTracing.sent: TRACE
