@@ -12,6 +12,7 @@ import java.util.Objects;
 import java.util.Set;
 
 @Entity
+@Table(name = "employee")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -21,31 +22,38 @@ public class Employee {
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "EMP_ID")
     private Long id;
+
     @Column(name = "EMP_Name")
     @NotNull
     @Size(min = 1, max = 100)
     private String name;
+
     /**
     Date of hire makes more sense with a Local Date object instead of Date
      */
     @Column(name = "EMP_DateOfHire")
     @NotNull
     private LocalDate hireDate;
+
     @Column(name = "EMP_Address")
     @NotNull
     @Size(min = 1)
     private String address;
+
     @Column(name = "EMP_HasCar")
     @NotNull
     private Boolean hasCar;
+
     /**
      Date of birth makes more sense with a Local Date object instead of Date
      */
     @Column(name = "EMP_BirthDate")
     @NotNull
     private LocalDate birthDate;
+
     @OneToMany(fetch = FetchType.EAGER, mappedBy = "employeeAttributeId.employeeId")
     private Set<EmployeeAttribute> employeeAttributes;
+
     @ManyToOne(fetch = FetchType.EAGER)
     private Employee supervisor;
 

@@ -11,6 +11,7 @@ import java.util.Objects;
 import java.util.Set;
 
 @Entity
+@Table(name = "attribute")
 @Getter
 @Setter
 @NoArgsConstructor
