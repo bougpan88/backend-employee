@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 import static java.util.stream.Collectors.toSet;
 import static org.springframework.web.bind.annotation.RequestMethod.*;
 
-@CrossOrigin(value = {"http://localhost:4200", "http://192.168.99.100" }, methods = {GET,POST,PUT,DELETE})
+@CrossOrigin(value = {"http://localhost:4200", "http://192.168.99.100", "http://localhost:4200" }, methods = {GET,POST,PUT,DELETE})
 @RestController()
 @RequestMapping("employees")
 public class EmployeeController {

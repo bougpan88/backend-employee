@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 import static org.springframework.web.bind.annotation.RequestMethod.*;
 
-@CrossOrigin(value = {"http://localhost:4200", "http://192.168.99.100" }, methods = {GET,POST,PUT,DELETE})
+@CrossOrigin(value = {"http://localhost:4200", "http://192.168.99.100", "http://localhost:4200" }, methods = {GET,POST,PUT,DELETE})
 @RestController
 public class JwtAuthenticationController {
 
