@@ -2,10 +2,16 @@ package com.boug.employee.endpoints;
 
 import com.boug.employee.domain.Attribute;
 import com.boug.employee.dto.AttributeDto;
+import com.boug.employee.error.ApplicationException;
 import com.boug.employee.error.CustomError;
 import com.boug.employee.repository.AttributeRepository;
 import com.boug.employee.service.AttributeService;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
@@ -31,24 +37,34 @@ public class AttributeController {
         this.attributeService = attributeService;
     }
 
+    @ApiOperation(value = "Used to create a new attribute")
+    @ApiResponses(value = { @ApiResponse(code = 202 , message = "accepted"),
+                            @ApiResponse(code = 400 , message = "bad request (attribute already exist or bad input data)"),
+                            @ApiResponse(code = 401 , message = "unauthorized"),
+                            @ApiResponse(code = 500 , message = "server error")})
+    @ResponseStatus(value = HttpStatus.ACCEPTED)
     @PostMapping()
-    public ResponseEntity createAttribute(@Valid @RequestBody AttributeDto attributeDto, BindingResult bindingResult){
+    public ResponseEntity<Void> createAttribute(@Valid @RequestBody AttributeDto attributeDto, BindingResult bindingResult){
         if (bindingResult.hasErrors()) {
             List<FieldError> errors = bindingResult.getFieldErrors();
             List<String> message = new ArrayList<>();
             for (FieldError e : errors) {
                 message.add("@" + e.getField() + ":" + e.getDefaultMessage());
             }
-            CustomError customError = new CustomError(400, "Bad Request", message.toString());
-            return ResponseEntity.badRequest().body(customError);
+            throw new ApplicationException( new CustomError(400, "Bad Request", message.toString()));
         } else {
             attributeService.createAttribute(attributeDto);
             return ResponseEntity.accepted().build();
         }
     }
 
+    @ApiOperation(value = "Used to retrieve all attributes")
+    @ApiResponses(value = { @ApiResponse(code = 200 , message = ""),
+            @ApiResponse(code = 204 , message = "No content"),
+            @ApiResponse(code = 401 , message = "unauthorized"),
+            @ApiResponse(code = 500 , message = "server error")})
     @GetMapping
-    public ResponseEntity getAllAttributes(){
+    public ResponseEntity<List<AttributeDto>> getAllAttributes(){
         List<AttributeDto> attributeDtos = attributeService.getAllAttributes();
         if (attributeDtos.isEmpty()){
             return ResponseEntity.noContent().build();
@@ -57,27 +73,36 @@ public class AttributeController {
         }
     }
 
+    @ApiOperation(value = "Used to retrieve all attribute names")
+    @ApiResponses(value = { @ApiResponse(code = 200 , message = "", response = String.class, responseContainer = "List"),
+            @ApiResponse(code = 401 , message = "unauthorized"),
+            @ApiResponse(code = 500 , message = "server error")})
     @GetMapping(path = "/names")
-    public ResponseEntity getAllAttributeNames(){
+    public ResponseEntity<List<String>> getAllAttributeNames(){
         List<AttributeDto> attributeDtos = attributeService.getAllAttributes();
         List<String> attributeNames = attributeDtos.stream().map(AttributeDto::getName).collect(Collectors.toList());
         return ResponseEntity.ok(attributeNames);
     }
 
-    @GetMapping(path = "/{attributeName}")
-    public ResponseEntity getAttribute(@PathVariable String attributeName){
-        Attribute attribute = attributeService.getAttribute(attributeName);
-        return ResponseEntity.ok(attribute);
-    }
-
+    @ApiOperation(value = "Used to delete an attribute")
+    @ApiResponses(value = { @ApiResponse(code = 204 , message = "deleted"),
+            @ApiResponse(code = 400 , message = "bad request (attribute does not exist or bad input data)"),
+            @ApiResponse(code = 401 , message = "unauthorized"),
+            @ApiResponse(code = 500 , message = "server error")})
+    @ResponseStatus(value = HttpStatus.NO_CONTENT)
     @DeleteMapping(path = "/{attributeName}")
-    public ResponseEntity deleteAttribute(@PathVariable String attributeName){
+    public ResponseEntity<Void> deleteAttribute(@PathVariable String attributeName){
         attributeService.deleteAttribute(attributeName);
         return ResponseEntity.noContent().build();
     }
 
+    @ApiOperation(value = "Used to update an attribute")
+    @ApiResponses(value = { @ApiResponse(code = 200 , message = "updated"),
+            @ApiResponse(code = 400 , message = "bad request (attribute does not exist or bad input data)"),
+            @ApiResponse(code = 401 , message = "unauthorized"),
+            @ApiResponse(code = 500 , message = "server error")})
     @PutMapping(path = "{oldAttributeName}")
-    public ResponseEntity updateAttribute(@PathVariable String oldAttributeName, @RequestBody AttributeDto attributeDto,
+    public ResponseEntity<Void> updateAttribute(@PathVariable String oldAttributeName, @RequestBody @ApiParam(value = "The new attribute name") AttributeDto attributeDto,
                                           BindingResult bindingResult){
         if (bindingResult.hasErrors()) {
             List<FieldError> errors = bindingResult.getFieldErrors();
@@ -85,11 +110,10 @@ public class AttributeController {
             for (FieldError e : errors) {
                 message.add("@" + e.getField() + ":" + e.getDefaultMessage());
             }
-            CustomError customError = new CustomError(400, "Bad Request", message.toString());
-            return ResponseEntity.badRequest().body(customError);
+            throw new ApplicationException( new CustomError(400, "Bad Request", message.toString()));
         } else {
-            Attribute updated = attributeService.updateAttribute(oldAttributeName, attributeDto.getName());
-            return ResponseEntity.ok(updated);
+            attributeService.updateAttribute(oldAttributeName, attributeDto.getName());
+            return ResponseEntity.ok().build();
         }
     }
 

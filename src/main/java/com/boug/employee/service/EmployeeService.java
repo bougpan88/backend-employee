@@ -6,6 +6,7 @@ import com.boug.employee.domain.EmployeeAttribute;
 import com.boug.employee.domain.EmployeeAttributeId;
 import com.boug.employee.dto.EmployeeAttributeDto;
 import com.boug.employee.dto.EmployeeDto;
+import com.boug.employee.dto.EmployeeWithIdDto;
 import com.boug.employee.error.ApplicationException;
 import com.boug.employee.error.CustomError;
 import com.boug.employee.repository.AttributeRepository;
@@ -63,26 +64,26 @@ public class EmployeeService {
     }
 
     @Transactional
-    public Employee updateEmployee(EmployeeDto employeeDto) {
+    public Employee updateEmployee(EmployeeDto employeeDto, Long employeeId) {
 
-        Optional<Employee> optEmployee = employeeRepository.findById(employeeDto.getId());
+        Optional<Employee> optEmployee = employeeRepository.findById(employeeId);
         EmployeeWithValidationError employeeWithValidationError = new EmployeeWithValidationError();
         if (optEmployee.isPresent()) {
             //Create employeeAttributes from employeeAttributeDtos
             if(employeeDto.getEmployeeAttributes()!= null && !employeeDto.getEmployeeAttributes().isEmpty()) {
                 employeeWithValidationError = employeeAttributeDtoToEmployAttribute(employeeDto.getEmployeeAttributes(),
-                                                                                    employeeDto.getId(),
+                        employeeId,
                                                                                     employeeWithValidationError);
             }
             employeeWithValidationError = supervisorIdToSupervisor(employeeWithValidationError, employeeDto.getSupervisorId());
 
             //When everything is ok we can persist employee and employeeAttributes
             if (employeeWithValidationError.errorMessage.toString().isEmpty()){
-                Employee employee = new Employee(employeeDto.getId(), employeeDto.getName(), employeeDto.getHireDate(),
-                                                 employeeDto.getAddress(), employeeDto.getHasCar(),
-                                                 employeeDto.getBirthDate(), employeeWithValidationError.employeeAttributes,
+                Employee employee = new Employee(employeeId, employeeDto.getName(), employeeDto.getHireDate(),
+                        employeeDto.getAddress(), employeeDto.getHasCar(),
+                        employeeDto.getBirthDate(), employeeWithValidationError.employeeAttributes,
                                                  employeeWithValidationError.supervisorEmployee);
-                employeeAttributeRepository.deleteByEmployeeAttributeIdEmployeeId(employeeDto.getId());
+                employeeAttributeRepository.deleteByEmployeeAttributeIdEmployeeId(employeeId);
                 for (EmployeeAttribute employeeAttribute: employeeWithValidationError.employeeAttributes){
                     employeeAttributeRepository.save(employeeAttribute);
                 }

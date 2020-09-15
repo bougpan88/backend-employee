@@ -4,8 +4,14 @@ import com.boug.employee.converter.EmployeeConverter;
 import com.boug.employee.domain.Employee;
 import com.boug.employee.dto.EmployeeAttributeDto;
 import com.boug.employee.dto.EmployeeDto;
+import com.boug.employee.dto.EmployeeWithIdDto;
+import com.boug.employee.error.ApplicationException;
 import com.boug.employee.error.CustomError;
 import com.boug.employee.service.EmployeeService;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
@@ -32,17 +38,20 @@ public class EmployeeController {
         this.employeeConverter = employeeConverter;
     }
 
+    @ApiOperation(value = "Used to create a new employee")
+    @ApiResponses(value = { @ApiResponse(code = 200 , message = ""),
+            @ApiResponse(code = 400 , message = "bad request (Bad input data with analytical description)"),
+            @ApiResponse(code = 401 , message = "unauthorized"),
+            @ApiResponse(code = 500 , message = "server error")})
     @PostMapping()
-    public ResponseEntity createEmployee(@Valid @RequestBody EmployeeDto employeeDto, BindingResult bindingResult){
-        if (bindingResult.hasErrors() || employeeDto.getId() != null) {
+    public ResponseEntity<EmployeeWithIdDto> createEmployee(@Valid @RequestBody EmployeeDto employeeDto, BindingResult bindingResult){
+        if (bindingResult.hasErrors()) {
             List<FieldError> errors = bindingResult.getFieldErrors();
             List<String> message = new ArrayList<>();
             for (FieldError e : errors) {
                 message.add("@" + e.getField() + ":" + e.getDefaultMessage());
             }
-            message.add("Id will be automatically created. Can not be contained in message body");
-            CustomError customError = new CustomError(400, "Bad Request", message.toString());
-            return ResponseEntity.badRequest().body(customError);
+            throw new ApplicationException( new CustomError(400, "Bad Request", message.toString()));
         } else {
             //Check if duplicate attributes have been posted
             Set<String> duplicates = findDuplicates(employeeDto.getEmployeeAttributes(),EmployeeAttributeDto::getAttributeName);
@@ -50,67 +59,90 @@ public class EmployeeController {
                 Employee employee = employeeService.createEmployee(employeeDto);
                 return ResponseEntity.ok(employeeConverter.employeeToEmployeeDto(employee));
             } else {
-                return ResponseEntity.badRequest().body(new CustomError(400, "Bad Request",
+                throw new ApplicationException( new CustomError(400, "Bad Request",
                         "Duplicate Attributes are not allowed: "+duplicates));
             }
         }
     }
 
-    @PutMapping(path = "")
-    public ResponseEntity updateEmployee(@Valid @RequestBody EmployeeDto employeeDto, BindingResult bindingResult){
-        if (bindingResult.hasErrors() || employeeDto.getId() == null) {
+    @ApiOperation(value = "Used to update an existing employee")
+    @ApiResponses(value = { @ApiResponse(code = 200 , message = ""),
+            @ApiResponse(code = 400 , message = "bad request (Bad input data with analytical description)"),
+            @ApiResponse(code = 401 , message = "unauthorized"),
+            @ApiResponse(code = 500 , message = "server error")})
+    @PutMapping(path = "/{employeeId}")
+    public ResponseEntity<EmployeeWithIdDto> updateEmployee(@Valid @RequestBody EmployeeDto employeeDto,
+                                                            @PathVariable Long employeeId, BindingResult bindingResult){
+        if (bindingResult.hasErrors()) {
             List<FieldError> errors = bindingResult.getFieldErrors();
             List<String> message = new ArrayList<>();
             for (FieldError e : errors) {
                 message.add("@" + e.getField() + ":" + e.getDefaultMessage());
             }
-            message.add("Id can not be null");
-            CustomError customError = new CustomError(400, "Bad Request", message.toString());
-            return ResponseEntity.badRequest().body(customError);
+            throw new ApplicationException( new CustomError(400, "Bad Request", message.toString()));
         } else {
             //Check if duplicate attributes have been posted
             Set<String> duplicates = findDuplicates(employeeDto.getEmployeeAttributes(),EmployeeAttributeDto::getAttributeName);
             if (duplicates.isEmpty()) {
-                Employee employee = employeeService.updateEmployee(employeeDto);
+                Employee employee = employeeService.updateEmployee(employeeDto, employeeId);
                 return ResponseEntity.ok(employeeConverter.employeeToEmployeeDto(employee));
             } else {
-                return ResponseEntity.badRequest().body(new CustomError(400, "Bad Request",
-                                                                       "Duplicate Attributes are not allowed: "+duplicates));
-            }
+                throw new ApplicationException( new CustomError(400, "Bad Request",
+                        "Duplicate Attributes are not allowed: "+duplicates));
+               }
         }
     }
 
+    @ApiOperation(value = "Used to retrieve an employee")
+    @ApiResponses(value = { @ApiResponse(code = 200 , message = ""),
+            @ApiResponse(code = 400 , message = "bad request (Employee does not exist)"),
+            @ApiResponse(code = 401 , message = "unauthorized"),
+            @ApiResponse(code = 500 , message = "server error")})
     @GetMapping(path = "/{employeeId}")
-    public ResponseEntity getEmployee(@PathVariable Long employeeId) {
+    public ResponseEntity<EmployeeWithIdDto> getEmployee(@PathVariable Long employeeId) {
         Employee retrievedEmployee = employeeService.getEmployee(employeeId);
         return ResponseEntity.ok(employeeConverter.employeeToEmployeeDto(retrievedEmployee));
     }
 
+    @ApiOperation(value = "Used to retrieve all employees that are bound with a specific attribute with a specific attribute value")
+    @ApiResponses(value = { @ApiResponse(code = 200 , message = ""),
+            @ApiResponse(code = 400 , message = "bad request (request parameter missing)"),
+            @ApiResponse(code = 401 , message = "unauthorized"),
+            @ApiResponse(code = 500 , message = "server error")})
     @GetMapping(path = "/search")
-    public ResponseEntity getEmployeeByAttributeSearch(@RequestParam String attributeName,
-                                                       @RequestParam String attributeValue) {
+    public ResponseEntity<List<EmployeeWithIdDto>> getEmployeeByAttributeSearch(@RequestParam String attributeName,
+                                                                                @RequestParam String attributeValue) {
         List<Employee> employees = employeeService.getEmployeesFromAttribute(attributeName, attributeValue);
 
-        List<EmployeeDto> employeeDtos = new ArrayList<>();
-        employees.forEach(employee -> employeeDtos.add(employeeConverter.employeeToEmployeeDto(employee)));
-        return ResponseEntity.ok(employeeDtos);
+        List<EmployeeWithIdDto> employeeWithIdDtos = new ArrayList<>();
+        employees.forEach(employee -> employeeWithIdDtos.add(employeeConverter.employeeToEmployeeDto(employee)));
+        return ResponseEntity.ok(employeeWithIdDtos);
     }
 
 
+    @ApiOperation(value = "Used to retrieve all employees")
+    @ApiResponses(value = { @ApiResponse(code = 200 , message = ""),
+            @ApiResponse(code = 204 , message = "No content"),
+            @ApiResponse(code = 401 , message = "unauthorized"),
+            @ApiResponse(code = 500 , message = "server error")})
     @GetMapping
-    public ResponseEntity getAllEmployees(){
+    public ResponseEntity<List<EmployeeWithIdDto>> getAllEmployees(){
         List<Employee> employees = employeeService.getAllEmployees();
         if (employees.isEmpty()){
             return ResponseEntity.noContent().build();
         } else{
-            List<EmployeeDto> employeeDtos = new ArrayList<>();
-            employees.forEach(employee -> employeeDtos.add(employeeConverter.employeeToEmployeeDto(employee)));
-            return ResponseEntity.ok(employeeDtos);
+            List<EmployeeWithIdDto> employeeWithIdDtos = new ArrayList<>();
+            employees.forEach(employee -> employeeWithIdDtos.add(employeeConverter.employeeToEmployeeDto(employee)));
+            return ResponseEntity.ok(employeeWithIdDtos);
         }
     }
 
+    @ApiOperation(value = "Used as a light api call to retrieve all employee ids that exist")
+    @ApiResponses(value = { @ApiResponse(code = 200 , message = ""),
+            @ApiResponse(code = 401 , message = "unauthorized"),
+            @ApiResponse(code = 500 , message = "server error")})
     @GetMapping(path = "/ids")
-    public ResponseEntity getAllEmployeeIds(){
+    public ResponseEntity<List<Long>> getAllEmployeeIds(){
         List<Employee> employees = employeeService.getAllEmployees();
         if (employees.isEmpty()){
             return ResponseEntity.noContent().build();
@@ -120,8 +152,14 @@ public class EmployeeController {
         }
     }
 
+    @ApiOperation(value = "Used to delete an employee")
+    @ApiResponses(value = { @ApiResponse(code = 204 , message = "deleted"),
+            @ApiResponse(code = 400 , message = "bad request (Employee does not exist or bad input data)"),
+            @ApiResponse(code = 401 , message = "unauthorized"),
+            @ApiResponse(code = 500 , message = "server error")})
+    @ResponseStatus(value = HttpStatus.NO_CONTENT)
     @DeleteMapping(path = "/{employeeId}")
-    public ResponseEntity deleteEmployee(@PathVariable Long employeeId) {
+    public ResponseEntity<Void> deleteEmployee(@PathVariable Long employeeId) {
         employeeService.deleteEmployee(employeeId);
         return ResponseEntity.noContent().build();
     }

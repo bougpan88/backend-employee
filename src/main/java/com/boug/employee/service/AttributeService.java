@@ -63,13 +63,12 @@ public class AttributeService {
     }
 
     @Transactional
-    public Attribute updateAttribute(String oldAttributeName, String newAttributeName){
+    public void updateAttribute(String oldAttributeName, String newAttributeName){
         Optional<Attribute> optRetrievedAttribute = attributeRepository.findByName(oldAttributeName);
         if (optRetrievedAttribute.isPresent()){
             Attribute retrievedAttribute = optRetrievedAttribute.get();
             retrievedAttribute.setName(newAttributeName);
-            retrievedAttribute = attributeRepository.save(retrievedAttribute);
-            return retrievedAttribute;
+            attributeRepository.save(retrievedAttribute);
         } else {
             throw new ApplicationException(new CustomError(404, "Not Found", "Attribute does not exist"));
         }

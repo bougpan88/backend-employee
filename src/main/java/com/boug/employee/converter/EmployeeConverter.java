@@ -4,7 +4,7 @@ import com.boug.employee.domain.Attribute;
 import com.boug.employee.domain.Employee;
 import com.boug.employee.domain.EmployeeAttribute;
 import com.boug.employee.dto.EmployeeAttributeDto;
-import com.boug.employee.dto.EmployeeDto;
+import com.boug.employee.dto.EmployeeWithIdDto;
 import com.boug.employee.error.ApplicationException;
 import com.boug.employee.error.CustomError;
 import com.boug.employee.repository.AttributeRepository;
@@ -26,15 +26,15 @@ public class EmployeeConverter {
         this.attributeRepository = attributeRepository;
     }
 
-    public EmployeeDto employeeToEmployeeDto (Employee employee){
-        EmployeeDto employeeDto = new EmployeeDto();
-        employeeDto.setId(employee.getId());
-        employeeDto.setName(employee.getName());
-        employeeDto.setAddress(employee.getAddress());
-        employeeDto.setBirthDate(employee.getBirthDate());
-        employeeDto.setHasCar(employee.getHasCar());
-        employeeDto.setHireDate(employee.getHireDate());
-        employeeDto.setSupervisorId(employee.getSupervisor()!= null ? employee.getSupervisor().getId() : null);
+    public EmployeeWithIdDto employeeToEmployeeDto (Employee employee){
+        EmployeeWithIdDto employeeWithIdDto = new EmployeeWithIdDto();
+        employeeWithIdDto.setId(employee.getId());
+        employeeWithIdDto.setName(employee.getName());
+        employeeWithIdDto.setAddress(employee.getAddress());
+        employeeWithIdDto.setBirthDate(employee.getBirthDate());
+        employeeWithIdDto.setHasCar(employee.getHasCar());
+        employeeWithIdDto.setHireDate(employee.getHireDate());
+        employeeWithIdDto.setSupervisorId(employee.getSupervisor()!= null ? employee.getSupervisor().getId() : null);
 
         List<EmployeeAttributeDto> employeeAttributeDtos = new ArrayList<>();
         Set<EmployeeAttribute> employeeAttributes = employee.getEmployeeAttributes();
@@ -55,8 +55,8 @@ public class EmployeeConverter {
             }
         }
         if (errorMessage.toString().isEmpty()){
-            employeeDto.setEmployeeAttributes(employeeAttributeDtos);
-            return employeeDto;
+            employeeWithIdDto.setEmployeeAttributes(employeeAttributeDtos);
+            return employeeWithIdDto;
         } else {
             CustomError customError = new CustomError(400, "Bad Request", errorMessage.toString());
             throw new ApplicationException(customError);

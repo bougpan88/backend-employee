@@ -1,6 +1,9 @@
 package com.boug.employee.endpoints;
 
 import com.boug.employee.security.*;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -27,8 +30,14 @@ public class JwtAuthenticationController {
     /*Already existing user
     username = admin
     password = admin*/
+    @ApiOperation(value = "Used to authenticate a user. Retrieves as a result of successful authentication " +
+            "information about the user and a bearer token")
+    @ApiResponses(value = { @ApiResponse(code = 200 , message = ""),
+            @ApiResponse(code = 400 , message = "bad request (Bad input data)"),
+            @ApiResponse(code = 401 , message = "unauthorized (Bad credentials)"),
+            @ApiResponse(code = 500 , message = "server error")})
     @RequestMapping(value = "/authenticate", method = RequestMethod.POST)
-    public ResponseEntity<?> createAuthenticationToken(@RequestBody JwtRequest authenticationRequest) throws Exception
+    public ResponseEntity<JwtResponse> createAuthenticationToken(@RequestBody JwtRequest authenticationRequest) throws Exception
     {
         String userName = authenticationRequest.getUsername();
         authenticate(userName, authenticationRequest.getPassword() );

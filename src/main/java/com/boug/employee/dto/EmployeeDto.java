@@ -16,7 +16,6 @@ import java.util.Objects;
 @NoArgsConstructor
 public class EmployeeDto {
 
-    private Long id;
     @NotNull
     @Size(min = 1, max = 100)
     private String name;
@@ -33,10 +32,9 @@ public class EmployeeDto {
     private Long supervisorId;
 
 
-    public EmployeeDto(Long id, @NotNull @Size(min = 1, max = 100) String name, @NotNull LocalDate hireDate,
-                       @NotNull @Size(min = 1) String address, @NotNull Boolean hasCar, @NotNull LocalDate birthDate,
-                       List<EmployeeAttributeDto> employeeAttributes, Long supervisorId) {
-        this.id = id;
+    public EmployeeDto(@NotNull @Size(min = 1, max = 100) String name, @NotNull LocalDate hireDate,
+                             @NotNull @Size(min = 1) String address, @NotNull Boolean hasCar, @NotNull LocalDate birthDate,
+                             List<EmployeeAttributeDto> employeeAttributes, Long supervisorId) {
         this.name = name;
         this.hireDate = hireDate;
         this.address = address;
@@ -46,31 +44,4 @@ public class EmployeeDto {
         this.supervisorId = supervisorId;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        EmployeeDto that = (EmployeeDto) o;
-        return Objects.equals(id, that.id);
-    }
-
-    @Override
-    public int hashCode() {
-
-        return Objects.hash(id);
-    }
-
-    @Override
-    public String toString() {
-        return "EmployeeDto{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                ", hireDate=" + hireDate +
-                ", address='" + address + '\'' +
-                ", hasCar=" + hasCar +
-                ", birthDate=" + birthDate +
-                ", employeeAttributes=" + employeeAttributes +
-                ", supervisorId=" + supervisorId +
-                '}';
-    }
 }

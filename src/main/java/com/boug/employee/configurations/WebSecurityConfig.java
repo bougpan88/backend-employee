@@ -3,6 +3,7 @@ package com.boug.employee.configurations;
 import com.boug.employee.security.JwtAuthenticationEntryPoint;
 import com.boug.employee.security.JwtRequestFilter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -16,7 +17,8 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.web.servlet.config.annotation.CorsRegistry;
+
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -31,6 +33,12 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter
 
     @Autowired
     private JwtRequestFilter jwtRequestFilter;
+
+    @Value("${auth.entry.point}")
+    private String authEntryPoint;
+
+    @Value("#{'${swager.exclude.from.security}'.split(',')}")
+    private List<String> swaggerExcludeFromSecurityUris;
 
     @Autowired
     public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
@@ -56,14 +64,13 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter
         return super.authenticationManagerBean();
     }
 
-    public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/**").allowedOrigins("*")
-                .allowedMethods("HEAD", "GET", "PUT", "POST",
-                        "DELETE", "PATCH").allowedHeaders("*");
-    }
-
     @Override
     protected void configure(HttpSecurity httpSecurity) throws Exception {
+
+        for (String swaggerExcludeFromSecurityUri : swaggerExcludeFromSecurityUris){
+            httpSecurity.authorizeRequests().antMatchers(swaggerExcludeFromSecurityUri).permitAll();
+        }
+
         // We don't need CSRF for this example
         httpSecurity
                 .cors()
@@ -75,26 +82,16 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter
                 .deny()
                 .and()
                 // dont authenticate this particular request
-                .authorizeRequests().antMatchers("/authenticate").permitAll().
+                .authorizeRequests().antMatchers(authEntryPoint).permitAll()
                 // all other requests need to be authenticated
-                        anyRequest().authenticated().and().
+                        .anyRequest().authenticated().and().
                 // make sure we use stateless session; session won't be used to
                 // store user's state.
                         exceptionHandling().authenticationEntryPoint(jwtAuthenticationEntryPoint).and().sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+
         // Add a filter to validate the tokens with every request
         httpSecurity.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
     }
-
-  /*  @Override
-    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-
-        auth.inMemoryAuthentication()
-                .withUser("user").password("{noop}password").roles("USER")
-                .and()
-                .withUser("admin").password("{noop}password").roles("ADMIN");
-
-    }*/
-
 
 }

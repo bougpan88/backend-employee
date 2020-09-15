@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.ExpiredJwtException;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -16,6 +17,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.List;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -28,15 +30,23 @@ public class JwtRequestFilter extends OncePerRequestFilter
     @Autowired
     private JwtUserDetailsService jwtUserDetailsService;
 
-
     @Autowired
     private JwtTokenUtil jwtTokenUtil;
+
+    @Value("${auth.entry.point}")
+    private String authEntryPoint;
+
+    @Value("#{'${swager.exclude.from.security}'.split(',')}")
+    private List<String> swaggerExcludeFromSecurityUris;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {
-        if (!request.getRequestURI().equals("/authenticate")) {
+
+        boolean mustBeExcludedForSwagger = swaggerExcludeFromSecurityUris.stream()
+                                                                         .anyMatch(s -> request.getRequestURI().startsWith(s));
+        if ( !mustBeExcludedForSwagger  && !request.getRequestURI().equals(authEntryPoint)) {
             final String requestTokenHeader = request.getHeader("authorization");
 
             String username = null;
@@ -71,9 +81,9 @@ public class JwtRequestFilter extends OncePerRequestFilter
                     usernamePasswordAuthenticationToken
                             .setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
-// After setting the Authentication in the context, we specify
-// that the current user is authenticated. So it passes the
-// Spring Security Configurations successfully.
+                    // After setting the Authentication in the context, we specify
+                    // that the current user is authenticated. So it passes the
+                    // Spring Security Configurations successfully.
                     SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
                 }
             }

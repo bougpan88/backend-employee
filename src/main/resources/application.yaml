@@ -11,11 +11,23 @@ spring:
 server:
  port: 9595
 
+ swagger.enabled: true
+
 spring.jackson.deserialization.fail-on-unknown-properties: true
 
 jwt.secret: fsdfsdfsdf
 
-security.ignored: /authenticate
+base.swagger.url: /
+springfox.documentation.swagger.v2.path: /api/swagger.json
+auth.entry.point: /authenticate
+swager.exclude.from.security: "/v3/api-docs,/swagger-ui/,/api/swagger.json,/swagger-ui/**,/swagger-resources/**"
+
+#swagger.api.exclude.from.security: /v3/api-docs
+#swager.index.exclude.from.security: /swagger-ui/
+
+api.description:
 
 #Log http requests and responses
 logging.level.org.springframework.ws.server.MessageTracing.sent: TRACE
+#Log every url mapping at startup
+logging.level.org.springframework.web.servlet.mvc.method.annotation: TRACE
